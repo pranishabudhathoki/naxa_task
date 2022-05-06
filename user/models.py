@@ -1,15 +1,39 @@
 import os.path
 from io import BytesIO
+import profile
+from django.db.models.signals import pre_save,post_save
+
 
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from PIL import Image
+from datetime import datetime
+import re
 
-from core.utils.managers import ActiveManager
+from core.utils.managers import ActiveManager, InActiveManager,ProfileComplete
 
 # Create your models here.
+
+
+
+class City(models.Model):
+    city=models.CharField(max_length=100,null=True,blank=True) 
+    state=models.IntegerField(null=True)
+    district=models.CharField(max_length=100,null=True,blank=True)   
+
+
+
+    def __str__(self) :
+        return self.city
+#  signals
+def save_city(sender,instance,**kwargs):
+        print("this is  a city")
+
+post_save.connect(save_city,sender= City)  
+        
+
 
 
 class UserProfile(models.Model):
@@ -35,9 +59,15 @@ class UserProfile(models.Model):
     date_created = models.DateTimeField(
         auto_now_add=True, blank=True, null=True)
     date_modified = models.DateTimeField(auto_now=True, blank=True, null=True)
+    birthdate=models.DateField(blank=True,null=True)
+    city=models.ForeignKey(City,on_delete=models.RESTRICT)
+    
+
     objects = models.Manager()
     active = ActiveManager()
-
+    complete=ProfileComplete()
+    inactive=InActiveManager()
+    
     def make_thumbnail(self):
         try:
             image = Image.open(self.image)
@@ -68,9 +98,45 @@ class UserProfile(models.Model):
     def save(self, *args, **kwargs):
         try:
             self.make_thumbnail()
+            address = self.address
+            location= [location in re.findall(address)]
+            cities = [ city in list(City.objects.all().values_list('city', flat=True))]
+            for location in location:
+                if location in cities:
+                    city = City.objects.get(city__iexact=location)
+                    self.city = city
+            
+
             super(UserProfile, self).save(*args, **kwargs)
         except:
             super(UserProfile, self).save(*args, **kwargs)
 
+
+          
+
     def __str__(self):
-        return self.user.username
+        return str(self.id)
+
+
+    def get_age(self):
+       today = datetime.today()
+       year=today.year-self.birthdate.year
+       month=today.month-self.birthdate.month
+
+       return f"{year} years {month} months."
+         
+        # if(self.birthdate.year<year):
+        #         if(self.birthdate.month<month):
+        #         y=year-self.birthdate.year
+        #         m=month-self.birthdate.month
+
+       
+
+        # else:
+        #     y=(year-self.birthdate.year)-1
+        #     m=12-(month-self.birthdate.month)
+
+
+    print(get_age)  
+
+

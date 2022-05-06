@@ -34,6 +34,14 @@ class UserSerializer(serializers.ModelSerializer):
                         "date_joined": {"write_only": True, "required": False},
                         }
 
+class CustomUserProfileSerializer(serializers.ModelSerializer):
+    city_name=serializers.CharField(source='city.city')
+    class Meta:
+        model=UserProfile
+        
+        fields=["id","city_name"]
+
+
 
 class UserProfileSerializer(serializers.ModelSerializer):
     is_active = serializers.SerializerMethodField()

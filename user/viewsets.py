@@ -25,14 +25,14 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import GenericAPIView
-from rest_framework.mixins import CreateModelMixin
+from rest_framework.mixins import CreateModelMixin,ListModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView, Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 from .models import UserProfile
 from .serializers import (SocialLoginSerializer, UserProfileSerializer,
-                          UserSerializer)
+                          UserSerializer,CustomUserProfileSerializer)
 from .utils import account_activation_token
 
 serializers = getattr(settings, 'REST_AUTH_SERIALIZERS', {})
@@ -91,6 +91,19 @@ class UserRegisterViewSet(GenericViewSet, CreateModelMixin):
 
     def __str__(self):
         return "UserRegisterViewSet"
+
+
+class UserListGenericAPIView(GenericAPIView,ListModelMixin):
+    serializer_class=CustomUserProfileSerializer
+    queryset=UserProfile.objects.all()
+
+    def get(self,request):
+        return self.list(request)
+
+    
+    
+
+
 
 
 class UserSignIn(APIView):

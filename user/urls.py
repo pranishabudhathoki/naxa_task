@@ -5,7 +5,7 @@ from django.urls import include, path
 from rest_framework import routers
 
 from user.viewsets import (CustomFacebookLoginView, CustomGoogleLoginView,
-                           UserProfileViewSet, UserRegisterViewSet, UserSignIn,
+                           UserProfileViewSet, UserRegisterViewSet, UserSignIn,UserListGenericAPIView,
                            activate_user, change_password, forgot_password,
                            reset_passoword)
 
@@ -28,4 +28,5 @@ urlpatterns = [
     path('facebook-sign-in/', CustomFacebookLoginView.as_view(), name='fb_sign_in'),
     path('google-sign-in/', CustomGoogleLoginView.as_view(), name='google_sign_in'),
     path('accounts/', include('allauth.urls'), name='socialaccount_signup'),
+    path('profiles/',UserListGenericAPIView.as_view(),name='profile'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
